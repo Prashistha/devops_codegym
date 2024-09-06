@@ -1,27 +1,31 @@
 pipeline {
     agent any
-    
-    environment {
+    environment
+    {
         PROJECT_NAME = "ECommerce Application"
-        REPO_PATH = "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\first pipieline@2"
-        PYTHON_PATH = "C:\\Users\\sansk\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
-        PYTEST_PATH = "C:\\Users\\sansk\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\pytest.exe"
-        SELENIUM_PATH = "C:\\Users\\sansk\\Downloads\\CodeGym-main\\Part 5 - Unit Testing\\SELENIUM\\Testing\\runAllTestSuites.bat"
-        DOCKER_IMAGE_NAME = "code_gym_image"
+		REPO_PATH = "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\devops_codegym"
+		PYTHON_PATH = "C:\\Users\\SANJAY\\AppData\\Local\\Programs\\Python\\Python310\\python.exe"
+		PYTEST_PATH = "C:\\Users\\SANJAY\\AppData\\Local\\Programs\\Python\\Python310\\Scripts\\pytest.exe"
+		SELENIUM_PATH = "C:\\Users\\SANJAY\\Documents\\PROGRAMMING\\PROJECTS\\CodeGym-main\\Part 5 - Unit Testing\\SELENIUM\\Testing\\runAllTestSuites.bat"
+		DOCKER_IMAGE_NAME = "code-gym-image"
         DOCKER_CONTAINER_NAME = "code_gym_container"
-        //DOCKERHUB_REPO = "sanskar22003/code_gym_image:latest"
+        DOCKERHUB_REPO = "prashistha/code-gym-image:v2.0"
     }
-    
+
     stages {
-        stage('Stage 1: Cloning Repository...') {
-            steps {
+        stage('Stage-1 Clone Repository') {
+            steps 
+            {
                 echo "Project Name: ${env.PROJECT_NAME}"
-                ws("${env.REPO_PATH}") {
-                    git branch: 'main', credentialsId: '65fd2953-20c8-47ac-90a5-de4ab6edf5a', url: 'https://github.com/sanskar22003/CodeGym.git'
+                ws("${env.REPO_PATH}") 
+                {
+                    git branch: 'main', credentialsId: '7708e1ff-b4d4-4d89-832e-05eeb33f5339', url: 'https://github.com/Prashistha/devops_codegym.git'
                 }
             }
         }
-        stage('Stage 2: Running Unit TestCases...') {
+        
+        stage('Stage 2: Running Unit TestCases...') 
+        {
             steps {
                 dir("${env.REPO_PATH}") {
                     catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
@@ -30,16 +34,20 @@ pipeline {
                 }
             }
         }
-        stage('Stage 3: Run SELENIUM Web App TestCases') {
+        stage('Stage 3: Run SELENIUM Web App TestCases') 
+        {
             steps {
+                
                 echo 'Running Selenium TestCases...'
-                dir("${env.REPO_PATH}") {
+                dir("${env.REPO_PATH}") 
+                {
                     catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                        bat "${env.PYTEST_PATH}"
+                        bat "${env.PYTEST_PATH} pytestsample.py"
                     }
                 }
             }
         }
+        
         stage('Stage 4: Build and Run Docker Image') {
             steps {
                 echo 'Building Docker Image...'
@@ -54,17 +62,20 @@ pipeline {
                 }
             }
         }
-        //stage('Stage 5: Push Docker Image to DockerHub') {
-            //steps {
-                //echo 'Pushing Docker Image to DockerHub...'
-                //script {
-                    //withCredentials([string(credentialsId: 'dockerhub-credentials', variable: 'DOCKERHUB_PASSWORD')]) {
-                        //bat "echo ${DOCKERHUB_PASSWORD} | docker login -u your_dockerhub_username --password-stdin"
-                        //bat "docker tag ${env.DOCKER_IMAGE_NAME} ${env.DOCKERHUB_REPO}"
-                        //bat "docker push ${env.DOCKERHUB_REPO}"
-                    //}
-                //}
-            //}
-        //}
+        
+        stage('Stage 5: Push Docker Image to DockerHub') 
+        {
+            steps 
+            {
+                echo 'Pushing Docker Image to DockerHub...'
+                script {
+                    withCredentials([string(credentialsId: 'dockerhub-credentials', variable: 'DOCKERHUB_PASSWORD')]) {
+                        bat "echo ${DOCKERHUB_PASSWORD} | docker login -u your_dockerhub_username --password-stdin"
+                        bat "docker tag ${env.DOCKER_IMAGE_NAME} ${env.DOCKERHUB_REPO}"
+                        bat "docker push ${env.DOCKERHUB_REPO}"
+                    }
+                }
+            }
+        }
     }
 }
